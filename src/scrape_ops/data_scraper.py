@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 import urllib.request as libreq
 import urllib.parse
 import time
@@ -22,6 +23,7 @@ class DataScraper:
         search_query = urllib.parse.quote(
             f"{self.query} AND submittedDate:[{self.start_date} TO {self.end_date}]"
         )
+        print("search_query", search_query)
         request_url = f"{self.base_url}search_query={search_query}&start={start_index}&max_results={self.max_results}&sortBy=submittedDate&sortOrder=descending"
 
         req = libreq.Request(request_url, headers={"User-Agent": "Mozilla/5.0"})
@@ -29,7 +31,7 @@ class DataScraper:
             r = url.read()
         return r
 
-    def fetch_all_results(self, output_file="arxiv_full_results.xml"):
+    def fetch_all_results(self, output_file="../../data/arxiv_test.xml"):
         """Fetch all results by paginating and saving to a file."""
         start_index = 0
         batch_number = 1
@@ -39,10 +41,13 @@ class DataScraper:
                 print(f"Fetching batch {batch_number} (starting at {start_index})...")
                 response = self.fetch_batch(start_index)
 
-                # If response is empty, break (no more results)
-                if not response.strip():
-                    print("No more results found.")
-                    break
+                # Parse XML and check if <entry> exists
+                root = ET.fromstring(response)
+                entries = root.findall("{http://www.w3.org/2005/Atom}entry")
+
+                if not entries:
+                    print("No more articles found. Stopping.")
+                    break  # Stop if no <entry> elements exist
 
                 file.write(response)  # Append batch to file
                 start_index += self.max_results
