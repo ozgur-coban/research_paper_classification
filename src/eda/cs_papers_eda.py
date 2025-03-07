@@ -1,10 +1,13 @@
 import json
 import random
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import Counter, defaultdict
 from datetime import datetime
+from wordcloud import WordCloud
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class EDA:
@@ -197,6 +200,14 @@ class EDA:
             sample = json.load(f)
             return sample
 
+    def get_sample_ids(self):
+        indexed_sample = {}
+        with open(self.sample_path, "r", encoding="utf-8") as f:
+            sample = json.load(f)
+            for paper in sample:
+                indexed_sample[paper.get("id")] = paper
+        return indexed_sample
+
     # Extract CS subcategories from the sampled data
     def get_category_distribution(self, sample):
         category_counts = {
@@ -275,7 +286,6 @@ class EDA:
         df = pd.DataFrame({"Word Count": lengths, "Character Count": char_lengths})
 
         print(df.describe())  # Summary statistics
-        print(df)
         # Plot histogram of word counts
         plt.figure(figsize=(10, 5))
         sns.histplot(df["Word Count"], bins=30, kde=True)
@@ -285,6 +295,95 @@ class EDA:
         plt.show()
 
         return df
+
+    def generate_word_cloud(self, abstracts):
+        # Join all abstracts into one large string
+        all_abstracts = " ".join(abstracts.values())
+
+        # Generate a word cloud
+        wordcloud = WordCloud(width=800, height=400, background_color="white").generate(
+            all_abstracts
+        )
+
+        # Display the word cloud
+        plt.figure(figsize=(10, 5))
+        plt.imshow(wordcloud, interpolation="bilinear")
+        plt.axis("off")
+        plt.show()
+
+    def get_top_tfidf_words(self, abstracts, top_n=10):
+        vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
+        tfidf_matrix = vectorizer.fit_transform(abstracts)
+        feature_names = np.array(vectorizer.get_feature_names_out())
+        avg_tfidf_scores = np.asarray(tfidf_matrix.mean(axis=0)).flatten()
+        # x = [5,2,1,10]
+
+        # print(argsort(x))
+        # [2, 1, 0, 3]
+        # exclude end'th index
+        # list_name[start : end : step]
+        # a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        # # Get every second element from the list
+        # # starting from the beginning
+        # b = a[::2]
+        # [1, 3, 5, 7, 9]
+        # index -2 , means second to last element
+        # you can use negative steps as well
+        # test_array = [0, 2, 5, 10, 7, 9, 20, -1, 23]
+        # np_array = np.asarray(a=test_array)
+        # indices = np_array.argsort()[-5:][::-1]
+        # print(indices)
+        # ordered = np_array[indices]
+        # print(ordered)
+
+        top_indices = avg_tfidf_scores.argsort()[-top_n:][::-1]
+        top_words = feature_names[top_indices]
+        top_scores = avg_tfidf_scores[top_indices]
+
+        return pd.DataFrame({"Word": top_words, "TF-IDF Score": top_scores})
+
+    def divide_papers_into_years(self, sample):
+        papers_per_years = {}
+        for paper in sample:
+            created_date = paper.get("versions")[0].get("created")
+            year = (datetime.strptime(created_date, "%a, %d %b %Y %H:%M:%S %Z")).year
+            paper_id = paper.get("id")
+
+            if year not in papers_per_years:
+                papers_per_years[year] = []  # Initialize list
+
+            papers_per_years[year].append(paper_id)  # Add ID to the list
+
+        return papers_per_years
+
+    def get_abstract_from_id(self, sample, ids):
+        abstracts = []
+        # print(sample.keys())
+        for id in ids:
+            abstract = sample.get(id).get("abstract")
+            abstracts.append(abstract)
+        return abstracts
+
+    def get_top_tfidf_words_per_year(self):
+        if self.use_already_existing_sample:
+            sample_data = self.get_sample()
+            sample_id_data = self.get_sample_ids()
+        else:
+            sample_data = self.load_sample()
+
+        papers_per_years = self.divide_papers_into_years(sample=sample_data)
+        # print(papers_per_years)
+        yearly_abstracts = {}
+        for year in papers_per_years.keys():
+            paper_ids = papers_per_years[year]
+            yearly_abstracts[year] = self.get_abstract_from_id(
+                sample=sample_id_data, ids=paper_ids
+            )
+        yearly_tfidf_dfs = {}
+        for year, abstracts in yearly_abstracts.items():
+            df = self.get_top_tfidf_words(abstracts=abstracts, top_n=10)
+            yearly_tfidf_dfs[year] = df
+        return yearly_tfidf_dfs
 
     def run_category_distribution(self):
         if self.use_already_existing_sample:
@@ -306,10 +405,46 @@ class EDA:
         year_counts = self.get_year_published(sample_data)
         self.plot_year_distribution(year_counts)
 
+    def plot_tfidf_heatmap(self, yearly_tfidf_dfs, top_n=10):
+        """
+        Creates a heatmap showing the evolution of top TF-IDF words over time.
+
+        Parameters:
+        yearly_tfidf_dfs: dict -> {year: dataframe_of_tfidf_words}
+        top_n: int -> Number of top words to consider
+
+        """
+
+        # Collect all unique top words across years
+        all_words = set()
+        for df in yearly_tfidf_dfs.values():
+            all_words.update(df["Word"].head(top_n))
+
+        # Create a DataFrame for heatmap
+        heatmap_data = pd.DataFrame(index=sorted(all_words))
+
+        for year, df in yearly_tfidf_dfs.items():
+            word_scores = df.set_index("Word")["TF-IDF Score"]
+            heatmap_data[year] = word_scores
+
+        # Fill missing values with 0 (some words might not appear in every year)
+        heatmap_data = heatmap_data.fillna(0)
+
+        # Plot heatmap
+        plt.figure(figsize=(12, 6))
+        sns.heatmap(heatmap_data, cmap="Blues", annot=False, linewidths=0.5)
+        plt.xlabel("Year")
+        plt.ylabel("Top Words")
+        plt.title("TF-IDF Score Evolution of Keywords Over Time")
+        plt.show()
+
     def run_test(self):
         if self.use_already_existing_sample:
             sample_data = self.get_sample()
         else:
             sample_data = self.load_sample()
-        abstracts = self.get_abstracts(sample_data)
-        self.analyze_abstract_lengths(abstracts)
+        # abstracts = self.get_abstracts(sample_data)
+        # self.analyze_abstract_lengths(abstracts)
+        # self.generate_word_cloud(abstracts)
+        # print(self.get_top_tfidf_words(abstracts))
+        print(sample_data)
