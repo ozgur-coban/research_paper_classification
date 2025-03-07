@@ -14,15 +14,12 @@ EDA
 
 sample before EDA(Full data length is 728065 meaning 728000 articles as javascript objects I think)(taking 9000 as sample For a 95% confidence level with a 1% margin of error)
 while EDA, may use already listed categories since I've got that list, instead of tracking sample's categories
+TODO use indexed dict instead of list
 
 ✅ Publication Year Distribution
 Extract year from update_date or versions[0]['created'].
 Plot a histogram of the number of papers per year.
 Check if paper submissions are increasing over time.
-✅ Author & Submitter Insights
-Count unique authors and top contributing authors (who has the most papers?).
-Identify if some submitters appear very frequently (possibly automated uploads).
-2️⃣ Text Analysis
 ✅ Abstract Length Distribution
 Compute word count for each abstract and plot a histogram.
 Detect very short/empty abstracts (possible issues in data).
@@ -32,7 +29,6 @@ Generate a word cloud to visualize common research topics.
 ✅ Keyword Trends Over Time
 Track how often terms like "deep learning", "reinforcement learning", or "transformers" appear each year.
 Identify emerging trends in ML, NLP, and other fields.
-3️⃣ Duplicate & Missing Data Handling
 ✅ Check for Duplicate Papers
 Some papers may have multiple versions in versions[].
 Decide whether to keep only the latest version (by sorting update_date).
@@ -41,6 +37,5 @@ Count missing values in abstract, journal-ref, doi, etc.
 If many papers are missing DOIs, consider ignoring that field.
 
 
-?maybe don't do lda, just use metadata cs categories
-?if lda, look at title,abstract
+?maybe don't do lda, just use metadata cs categories. if lda, look at title,abstract
 ?maybe do both and use lda to discover subcategories

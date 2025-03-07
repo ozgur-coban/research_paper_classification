@@ -20,7 +20,8 @@ def main():
     )
     # eda.save_sample_to_file()
     # eda.run_category_distribution()
-    eda.run_year_distribution()
+    # eda.run_year_distribution()
+    eda.run_test()
 
 
 if __name__ == "__main__":

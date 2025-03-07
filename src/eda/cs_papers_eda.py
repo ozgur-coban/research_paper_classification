@@ -243,18 +243,48 @@ class EDA:
             year_counts[year] = year_counts.get(year, 0) + 1
         return year_counts
 
-    def plot_year_histogram(self, year_counts):
-        years = list(year_counts.keys())
-        counts = list(year_counts.values())
-
+    def plot_year_distribution(self, year_counts):
+        df = pd.DataFrame(
+            list(year_counts.items()), columns=["Year", "Number of Articles"]
+        )
         plt.figure(figsize=(12, 6))
-        sns.histplot(years, bins=len(years), kde=True, color="blue")
+        sns.barplot(x="Year", y="Number of Articles", data=df)
 
         plt.xlabel("Publication Year")
         plt.ylabel("Number of Articles")
         plt.title("Histogram of Articles Published by Year")
         plt.xticks(rotation=45)
         plt.show()
+
+    def get_abstracts(self, sample):
+        paper_abstracts = {}
+        for paper in sample:
+            id = paper.get("id")
+            abstract = paper.get("abstract")
+            paper_abstracts[id] = abstract
+        return paper_abstracts
+
+    def analyze_abstract_lengths(self, abstracts):
+        lengths = [
+            len(abstract.split()) for abstract in abstracts.values()
+        ]  # Word count
+        char_lengths = [
+            len(abstract) for abstract in abstracts.values()
+        ]  # Character count
+
+        df = pd.DataFrame({"Word Count": lengths, "Character Count": char_lengths})
+
+        print(df.describe())  # Summary statistics
+        print(df)
+        # Plot histogram of word counts
+        plt.figure(figsize=(10, 5))
+        sns.histplot(df["Word Count"], bins=30, kde=True)
+        plt.xlabel("Word Count per Abstract")
+        plt.ylabel("Number of Papers")
+        plt.title("Distribution of Abstract Word Counts")
+        plt.show()
+
+        return df
 
     def run_category_distribution(self):
         if self.use_already_existing_sample:
@@ -274,4 +304,12 @@ class EDA:
         else:
             sample_data = self.load_sample()
         year_counts = self.get_year_published(sample_data)
-        self.plot_year_histogram(year_counts)
+        self.plot_year_distribution(year_counts)
+
+    def run_test(self):
+        if self.use_already_existing_sample:
+            sample_data = self.get_sample()
+        else:
+            sample_data = self.load_sample()
+        abstracts = self.get_abstracts(sample_data)
+        self.analyze_abstract_lengths(abstracts)
