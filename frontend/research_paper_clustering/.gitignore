@@ -36,8 +36,6 @@ Thumbs.db
 # Svelte (if you’re using Svelte)
 .svelte/
 
-# Static site output (optional)
-/public/
 
-# React-specific (for create-react-app apps)
-/public/ldaresults.json
+
+
