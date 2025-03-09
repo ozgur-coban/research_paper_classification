@@ -1,2 +1,3 @@
-__all__ = ["Preprocessing"]
+__all__ = ["Preprocessing", "LDA"]
 from .preprocessing import Preprocessing
+from .lda import LDA

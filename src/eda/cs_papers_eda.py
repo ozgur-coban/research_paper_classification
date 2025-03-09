@@ -316,25 +316,6 @@ class EDA:
         tfidf_matrix = vectorizer.fit_transform(abstracts)
         feature_names = np.array(vectorizer.get_feature_names_out())
         avg_tfidf_scores = np.asarray(tfidf_matrix.mean(axis=0)).flatten()
-        # x = [5,2,1,10]
-
-        # print(argsort(x))
-        # [2, 1, 0, 3]
-        # exclude end'th index
-        # list_name[start : end : step]
-        # a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        # # Get every second element from the list
-        # # starting from the beginning
-        # b = a[::2]
-        # [1, 3, 5, 7, 9]
-        # index -2 , means second to last element
-        # you can use negative steps as well
-        # test_array = [0, 2, 5, 10, 7, 9, 20, -1, 23]
-        # np_array = np.asarray(a=test_array)
-        # indices = np_array.argsort()[-5:][::-1]
-        # print(indices)
-        # ordered = np_array[indices]
-        # print(ordered)
 
         top_indices = avg_tfidf_scores.argsort()[-top_n:][::-1]
         top_words = feature_names[top_indices]

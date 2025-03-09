@@ -1,6 +1,10 @@
+import numpy as np
+import pandas as pd
 from scrape_ops import DataScraper, JsonExtractor, GetSample
 from eda import EDA
-from lda import Preprocessing
+from lda import Preprocessing, LDA
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 def main():
@@ -22,8 +26,36 @@ def main():
         use_existing_sample=True, sample_path="./data/sample_filtered_cs_papers.json"
     )
     sample = sample_object.get_sample()
-    preprocessing = Preprocessing(sample)
-    preprocessing.test_sample()
+    tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
+    preprocessing = Preprocessing(
+        sample,
+        normalized_abstract_path="./data/normalized_abstracts.json",
+        vectorizer=tfidf_vectorizer,
+    )
+
+    # preprocessing.save_preprocessed_abstracts()
+    # papers_by_year_category = preprocessing.divide_papers_by_year_and_category()
+    # categories = set()
+
+    # # Iterate through the dictionary to get the categories
+    # for year, category_dict in abstracts_by_year_category.items():
+    #     for category in category_dict:
+    #         categories.add(category)
+    # print(categories)
+    # abstracts_by_year_category = preprocessing.get_abstracts_by_year_category(
+    #     papers_by_year_category
+    # )
+    category_tfidf_dfs = preprocessing.get_top_tfidf_words_by_category()
+
+    lda = LDA(
+        category_tfidf_dfs,
+        num_topics=1,
+        tfidf_vectorizer=tfidf_vectorizer,
+        use_tfidf=True,
+        save_lda_results=True,
+        save_lda_path="./data/lda_results.json",
+    )
+    lda.test_tfidf()
 
 
 if __name__ == "__main__":
