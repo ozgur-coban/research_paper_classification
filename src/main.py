@@ -26,7 +26,18 @@ def main():
         use_existing_sample=True, sample_path="./data/sample_filtered_cs_papers.json"
     )
     sample = sample_object.get_sample()
+    eda = EDA(use_already_existing_sample=True, sample=sample)
+    json_test = eda.run_category_distribution_json()
+    print(json_test)
+    return
     tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
+    # preprocessing_save = Preprocessing(
+    #     sample,
+    #     preprocess_abstracts=True,
+    #     abstract_save_path="./data/normalized_abstracts.json",
+    # )
+    # preprocessing_save.save_preprocessed_abstracts()
+
     preprocessing = Preprocessing(
         sample,
         normalized_abstract_path="./data/normalized_abstracts.json",

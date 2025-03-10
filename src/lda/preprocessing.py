@@ -13,7 +13,7 @@ class Preprocessing:
     def __init__(
         self,
         sample,
-        vectorizer,
+        vectorizer=None,
         abstract_save_path="./data/normalized_abstracts.json",
         preprocess_abstracts=False,
         normalized_abstract_path=None,

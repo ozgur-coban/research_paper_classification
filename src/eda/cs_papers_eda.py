@@ -13,11 +13,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 class EDA:
     def __init__(
         self,
-        file_path="./data/filtered_cs_papers",
+        file_path=None,
         sample_output_path=None,
         sample_size=100,
         use_already_existing_sample=False,
         sample_path=None,
+        sample=None,
     ):
         self.file_path = file_path
         self.sample_size = sample_size
@@ -172,6 +173,7 @@ class EDA:
         ]
         if use_already_existing_sample:
             self.sample_path = sample_path
+            self.sample = sample
         else:
             self.sample_output_path = sample_output_path
 
@@ -196,14 +198,22 @@ class EDA:
         print(f"Sample saved to {self.sample_output_path}")
 
     def get_sample(self):
-        with open(self.sample_path, "r", encoding="utf-8") as f:
-            sample = json.load(f)
-            return sample
+        if self.sample_path:
+            with open(self.sample_path, "r", encoding="utf-8") as f:
+                sample = json.load(f)
+                return sample
+        else:
+            return self.sample
 
     def get_sample_ids(self):
         indexed_sample = {}
-        with open(self.sample_path, "r", encoding="utf-8") as f:
-            sample = json.load(f)
+        if self.sample_path:
+            with open(self.sample_path, "r", encoding="utf-8") as f:
+                sample = json.load(f)
+                for paper in sample:
+                    indexed_sample[paper.get("id")] = paper
+        else:
+            sample = self.sample
             for paper in sample:
                 indexed_sample[paper.get("id")] = paper
         return indexed_sample
@@ -225,6 +235,21 @@ class EDA:
                     category_counts[category] += 1
 
         return category_counts
+
+    def get_category_distribution_json(self, category_counts, top_n=30):
+        # Sort the category counts and get the top N
+        most_common = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[
+            :top_n
+        ]
+
+        # Extract labels and values
+        labels, values = zip(*most_common)
+
+        # Prepare data as a dictionary
+        data = {"CS Subcategories": list(labels), "Number of Papers": list(values)}
+
+        # Convert to JSON format
+        return json.dumps(data)
 
     # Plot the top CS subcategories
     def plot_category_distribution(self, category_counts, top_n=30):
@@ -371,12 +396,16 @@ class EDA:
             sample_data = self.get_sample()
         else:
             sample_data = self.load_sample()
-        print("Sample Papers:")
-        # for paper in sample_data:
-        #     print(json.dumps(paper, indent=2))
-
         category_counts = self.get_category_distribution(sample_data)
         self.plot_category_distribution(category_counts)
+
+    def run_category_distribution_json(self):
+        if self.use_already_existing_sample:
+            sample_data = self.get_sample()
+        else:
+            sample_data = self.load_sample()
+        category_counts = self.get_category_distribution(sample_data)
+        return self.get_category_distribution_json(category_counts=category_counts)
 
     def run_year_distribution(self):
         if self.use_already_existing_sample:
