@@ -13,11 +13,24 @@ function TopicDisplay() {
     const fetchTopics = async () => {
       try {
         const response = await fetch("/lda_results.json");
-        if (!response.ok) {
+        const categoryResponse = await fetch("/category_mappings.json");
+        if (!response.ok || !categoryResponse.ok) {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        setTopics(data);
+        const categoryMappings = await categoryResponse.json();
+        // Update the categories with human-readable names dynamically
+        const updatedTopics = Object.keys(data).reduce((acc, year) => {
+          acc[year] = Object.keys(data[year]).reduce((yearAcc, category) => {
+            const humanReadableCategory =
+              categoryMappings[category] || category; // fallback to original if not found
+            yearAcc[humanReadableCategory] = data[year][category];
+            return yearAcc;
+          }, {});
+          return acc;
+        }, {});
+
+        setTopics(updatedTopics);
       } catch (error) {
         setError("Failed to fetch topics.");
       } finally {

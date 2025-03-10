@@ -316,11 +316,12 @@ json format before react:
 }
 
 
-BASVURUSU SONRASI YAPILACAKLAR:
--readme ekle 
--lda-ldatfidf-tfidf karsilastirmasi koy
--eda grafiklerini guzellestir
+BASVURUSU SONRASI YAPILACAKLAR:(gercekten hangilerine bakarlar ona gore karar ver)
+-(en son hizlica)readme ekle 
+-(Onemli 2)lda-ldatfidf-tfidf karsilastirmasi koy
+-(Onemli 1)eda grafiklerini guzellestir
 -kodu refactor
--commit'leri duzelt
--frontend'i duzelt
--kategori isimleri anlasilabilir yapilacak
+-commit'leri duzelt 
+-(Onemli)frontend'i duzelt
++(Onemli)kategori isimleri anlasilabilir yapilacak
+-gereksiz dosyalari cikar, notes falan gibi + dosya duzenini duzelt
