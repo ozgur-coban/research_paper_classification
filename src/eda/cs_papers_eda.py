@@ -19,10 +19,12 @@ class EDA:
         use_already_existing_sample=False,
         sample_path=None,
         sample=None,
+        json_save_path=None,
     ):
         self.file_path = file_path
         self.sample_size = sample_size
         self.use_already_existing_sample = use_already_existing_sample
+        self.json_save_path = json_save_path
         self.category_list = [
             "cs.AI",
             "cs.AR",
@@ -218,6 +220,12 @@ class EDA:
                 indexed_sample[paper.get("id")] = paper
         return indexed_sample
 
+    def save_json_to_file(self, json_data):
+        data = json.loads(json_data)
+        with open(self.json_save_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"Sample saved to {self.json_save_path}")
+
     # Extract CS subcategories from the sampled data
     def get_category_distribution(self, sample):
         category_counts = {
@@ -405,7 +413,11 @@ class EDA:
         else:
             sample_data = self.load_sample()
         category_counts = self.get_category_distribution(sample_data)
-        return self.get_category_distribution_json(category_counts=category_counts)
+        self.save_json_to_file(
+            json_data=self.get_category_distribution_json(
+                category_counts=category_counts
+            )
+        )
 
     def run_year_distribution(self):
         if self.use_already_existing_sample:

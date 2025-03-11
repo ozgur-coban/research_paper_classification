@@ -8,7 +8,6 @@ function TopicDisplay() {
   const [activeYear, setActiveYear] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const [scrolling, setScrolling] = useState(false);
-
   useEffect(() => {
     const fetchTopics = async () => {
       try {
