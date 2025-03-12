@@ -18,8 +18,7 @@ def main():
     # eda.save_sample_to_file()
     # eda.run_category_distribution()
     # eda.run_year_distribution()
-    # yearly_tfidf_dfs = eda.get_top_tfidf_words_per_year()
-    # eda.plot_tfidf_heatmap(yearly_tfidf_dfs)
+    # eda.plot_tfidf_heatmap()
     # eda.run_test()
 
     sample_object = GetSample(
@@ -31,7 +30,10 @@ def main():
         sample=sample,
         json_save_path="./data/category_distribution.json",
     )
-    eda.run_category_distribution_json()
+    # eda.save_category_distribution_as_json()
+    # eda.save_year_distribution_as_json()
+    # eda.save_abstract_length_counts_as_json()
+    eda.save_tfidf_distribution_as_json()
     return
     tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
     # preprocessing_save = Preprocessing(

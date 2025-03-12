@@ -209,15 +209,10 @@ class EDA:
 
     def get_sample_ids(self):
         indexed_sample = {}
-        if self.sample_path:
-            with open(self.sample_path, "r", encoding="utf-8") as f:
-                sample = json.load(f)
-                for paper in sample:
-                    indexed_sample[paper.get("id")] = paper
-        else:
-            sample = self.sample
-            for paper in sample:
-                indexed_sample[paper.get("id")] = paper
+
+        sample = self.sample
+        for paper in sample:
+            indexed_sample[paper.get("id")] = paper
         return indexed_sample
 
     def save_json_to_file(self, json_data):
@@ -244,7 +239,7 @@ class EDA:
 
         return category_counts
 
-    def get_category_distribution_json(self, category_counts, top_n=30):
+    def get_category_distribution_as_json(self, category_counts, top_n=30):
         # Sort the category counts and get the top N
         most_common = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[
             :top_n
@@ -286,6 +281,13 @@ class EDA:
             year = (datetime.strptime(created_date, "%a, %d %b %Y %H:%M:%S %Z")).year
             year_counts[year] = year_counts.get(year, 0) + 1
         return year_counts
+
+    def get_year_published_as_json(self, year_counts):
+        data = {
+            "Years": list(year_counts.keys()),
+            "Year Counts": list(year_counts.values()),
+        }
+        return json.dumps(data)
 
     def plot_year_distribution(self, year_counts):
         df = pd.DataFrame(
@@ -329,6 +331,11 @@ class EDA:
 
         return df
 
+    def get_abstract_lengths_as_json(self, abstracts):
+        lengths = [len(abstract.split()) for abstract in abstracts.values()]
+        data = {"Word Counts": lengths}
+        return json.dumps(data)
+
     def generate_word_cloud(self, abstracts):
         # Join all abstracts into one large string
         all_abstracts = " ".join(abstracts.values())
@@ -344,7 +351,7 @@ class EDA:
         plt.axis("off")
         plt.show()
 
-    def get_top_tfidf_words(self, abstracts, top_n=10):
+    def get_top_tfidf_words_as_df(self, abstracts, top_n=10):
         vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
         tfidf_matrix = vectorizer.fit_transform(abstracts)
         feature_names = np.array(vectorizer.get_feature_names_out())
@@ -355,6 +362,18 @@ class EDA:
         top_scores = avg_tfidf_scores[top_indices]
 
         return pd.DataFrame({"Word": top_words, "TF-IDF Score": top_scores})
+
+    def get_top_tfidf_words(self, abstracts, top_n=10):
+        vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
+        tfidf_matrix = vectorizer.fit_transform(abstracts)
+        feature_names = np.array(vectorizer.get_feature_names_out())
+        avg_tfidf_scores = np.asarray(tfidf_matrix.mean(axis=0)).flatten()
+
+        top_indices = avg_tfidf_scores.argsort()[-top_n:][::-1]
+        top_words = feature_names[top_indices]
+        top_scores = avg_tfidf_scores[top_indices]
+
+        return {"Word": top_words, "TF-IDF Score": top_scores}
 
     def divide_papers_into_years(self, sample):
         papers_per_years = {}
@@ -379,25 +398,34 @@ class EDA:
         return abstracts
 
     def get_top_tfidf_words_per_year(self):
-        if self.use_already_existing_sample:
-            sample_data = self.get_sample()
-            sample_id_data = self.get_sample_ids()
-        else:
-            sample_data = self.load_sample()
-
-        papers_per_years = self.divide_papers_into_years(sample=sample_data)
-        # print(papers_per_years)
+        papers_per_years = self.divide_papers_into_years(sample=self.sample)
         yearly_abstracts = {}
         for year in papers_per_years.keys():
             paper_ids = papers_per_years[year]
             yearly_abstracts[year] = self.get_abstract_from_id(
-                sample=sample_id_data, ids=paper_ids
+                sample=self.get_sample_ids(), ids=paper_ids
             )
         yearly_tfidf_dfs = {}
         for year, abstracts in yearly_abstracts.items():
-            df = self.get_top_tfidf_words(abstracts=abstracts, top_n=10)
+            df = self.get_top_tfidf_words_as_df(abstracts=abstracts, top_n=10)
             yearly_tfidf_dfs[year] = df
         return yearly_tfidf_dfs
+
+    def get_top_tfidf_words_per_year_as_json(self):
+        papers_per_years = self.divide_papers_into_years(sample=self.sample)
+        yearly_abstracts = {}
+        for year in papers_per_years.keys():
+            paper_ids = papers_per_years[year]
+            yearly_abstracts[year] = self.get_abstract_from_id(
+                sample=self.get_sample_ids(), ids=paper_ids
+            )
+        yearly_tfidfs = {}
+        for year, abstracts in yearly_abstracts.items():
+            df = self.get_top_tfidf_words_as_df(abstracts=abstracts, top_n=10)
+
+            yearly_tfidfs[year] = df.to_dict(orient="records")
+        data = yearly_tfidfs
+        return json.dumps(data, indent=2)
 
     def run_category_distribution(self):
         if self.use_already_existing_sample:
@@ -407,14 +435,15 @@ class EDA:
         category_counts = self.get_category_distribution(sample_data)
         self.plot_category_distribution(category_counts)
 
-    def run_category_distribution_json(self):
+    def save_category_distribution_as_json(self):
         if self.use_already_existing_sample:
             sample_data = self.get_sample()
         else:
             sample_data = self.load_sample()
         category_counts = self.get_category_distribution(sample_data)
+        self.json_save_path = "./data/category_distribution.json"
         self.save_json_to_file(
-            json_data=self.get_category_distribution_json(
+            json_data=self.get_category_distribution_as_json(
                 category_counts=category_counts
             )
         )
@@ -427,7 +456,20 @@ class EDA:
         year_counts = self.get_year_published(sample_data)
         self.plot_year_distribution(year_counts)
 
-    def plot_tfidf_heatmap(self, yearly_tfidf_dfs, top_n=10):
+    def save_year_distribution_as_json(self):
+        year_counts = self.get_year_published(self.sample)
+        self.json_save_path = "./data/year_distribution.json"
+        self.save_json_to_file(self.get_year_published_as_json(year_counts=year_counts))
+
+    def save_abstract_length_counts_as_json(self):
+        abstracts = self.get_abstracts(self.sample)
+
+        self.json_save_path = "./`data`/abstract_length_distribution.json"
+        self.save_json_to_file(
+            json_data=self.get_abstract_lengths_as_json(abstracts=abstracts)
+        )
+
+    def plot_tfidf_heatmap(self, top_n=10):
         """
         Creates a heatmap showing the evolution of top TF-IDF words over time.
 
@@ -436,7 +478,7 @@ class EDA:
         top_n: int -> Number of top words to consider
 
         """
-
+        yearly_tfidf_dfs = self.get_top_tfidf_words_as_df()
         # Collect all unique top words across years
         all_words = set()
         for df in yearly_tfidf_dfs.values():
@@ -460,6 +502,9 @@ class EDA:
         plt.title("TF-IDF Score Evolution of Keywords Over Time")
         plt.show()
 
+    def save_tfidf_distribution_as_json(self):
+        yearly_tfidfs = self.get_top_tfidf_words_per_year_as_json()
+
     def run_test(self):
         if self.use_already_existing_sample:
             sample_data = self.get_sample()
@@ -468,5 +513,5 @@ class EDA:
         # abstracts = self.get_abstracts(sample_data)
         # self.analyze_abstract_lengths(abstracts)
         # self.generate_word_cloud(abstracts)
-        # print(self.get_top_tfidf_words(abstracts))
+        # print(self.get_top_tfidf_words_as_df(abstracts))
         print(sample_data)
