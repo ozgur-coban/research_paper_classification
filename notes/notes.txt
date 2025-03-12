@@ -328,3 +328,110 @@ BASVURUSU SONRASI YAPILACAKLAR:(gercekten hangilerine bakarlar ona gore karar ve
 -fix the folder structure
 
 So now main aspects of the project : Python data processing, React deployment on Vercel. For the python part, I've used an arxiv.org dataset and got a sample of  9000  For a 95% confidence level with a 1% margin of error  to first classify research for each year for each category, then I did eda to see : category distribution, year published distribution. Applied prerocessing(lowering,stopwordremoval,lemmatization) to all abstracts and continued eda with  abstract length  distribution to find average, then I applied tfidf to individual abstracts to find top idf words for each year for each category to analyze category trends over years. Then as a final point I wanted to test, I applied LDA to all abstracts per year per category, TFIDF to all abstracts per year per category, and LDA fed with TFIDF to all abstracts per year per category to discover subcategorizes of abstracts. After all of this deployed using React with visualization.
+
+CATEGORY DISTRIBUTION
+
+YEAR DISTRIBUTION
+{"Years": [2021, 2022, 2023, 2024, 2018, 2016, 2015, 2025, 2013, 2020, 2012, 2014, 2010, 2019, 2008, 2011, 2017, 2005, 2004, 2000, 2007, 2006, 2009, 2001, 2003, 2002, 1994, 1995, 1999, 1998, 1996, 1997], "Year Counts": [977, 1088, 1238, 1483, 516, 296, 216, 237, 196, 882, 152, 202, 107, 654, 46, 119, 410, 13, 18, 4, 37, 23, 45, 5, 11, 5, 3, 4, 3, 6, 2, 2]}
+
+abstract lengths
+ {
+  "Word Counts": [
+    236,
+    181,
+    195,
+    155,
+    164,
+    198,
+    125,
+    100]}
+
+tfidf heatmap
+
+
+{
+"1996": [
+    {
+      "Word": "regularities",
+      "TF-IDF Score": 0.14671288247945657
+    },
+    {
+      "Word": "semantic",
+      "TF-IDF Score": 0.14671288247945657
+    },
+    {
+      "Word": "magic",
+      "TF-IDF Score": 0.13865840046152522
+    },
+    {
+      "Word": "compilation",
+      "TF-IDF Score": 0.13865840046152522
+    },
+    {
+      "Word": "optimizations",
+      "TF-IDF Score": 0.13865840046152522
+    },
+    {
+      "Word": "filtering",
+      "TF-IDF Score": 0.13865840046152522
+    },
+    {
+      "Word": "allows",
+      "TF-IDF Score": 0.13865840046152522
+    },
+    {
+      "Word": "logic",
+      "TF-IDF Score": 0.13865840046152522
+    },
+    {
+      "Word": "processing",
+      "TF-IDF Score": 0.11891991312070155
+    },
+    {
+      "Word": "clues",
+      "TF-IDF Score": 0.09780858831963772
+    }
+  ],
+  "1997": [
+    {
+      "Word": "models",
+      "TF-IDF Score": 0.18148088816046706
+    },
+    {
+      "Word": "state",
+      "TF-IDF Score": 0.168683210205168
+    },
+    {
+      "Word": "finite",
+      "TF-IDF Score": 0.168683210205168
+    },
+    {
+      "Word": "model",
+      "TF-IDF Score": 0.14260958262790452
+    },
+    {
+      "Word": "1996",
+      "TF-IDF Score": 0.11610741722762549
+    },
+    {
+      "Word": "speech",
+      "TF-IDF Score": 0.112455473470112
+    },
+    {
+      "Word": "context",
+      "TF-IDF Score": 0.112455473470112
+    },
+    {
+      "Word": "processing",
+      "TF-IDF Score": 0.112455473470112
+    },
+    {
+      "Word": "paper",
+      "TF-IDF Score": 0.10695718697092839
+    },
+    {
+      "Word": "trained",
+      "TF-IDF Score": 0.10695718697092839
+    }
+  ]
+}
