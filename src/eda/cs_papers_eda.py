@@ -411,21 +411,51 @@ class EDA:
             yearly_tfidf_dfs[year] = df
         return yearly_tfidf_dfs
 
+    # def get_top_tfidf_words_per_year_as_json(self):
+    #     papers_per_years = self.divide_papers_into_years(sample=self.sample)
+    #     yearly_abstracts = {}
+    #     for year in papers_per_years.keys():
+    #         paper_ids = papers_per_years[year]
+    #         yearly_abstracts[year] = self.get_abstract_from_id(
+    #             sample=self.get_sample_ids(), ids=paper_ids
+    #         )
+    #     yearly_tfidfs = {}
+    #     for year, abstracts in yearly_abstracts.items():
+    #         df = self.get_top_tfidf_words_as_df(abstracts=abstracts, top_n=10)
+
+    #         yearly_tfidfs[year] = df.to_dict(orient="records")
+    #     data = yearly_tfidfs
+    #     return json.dumps(data, indent=2)
     def get_top_tfidf_words_per_year_as_json(self):
         papers_per_years = self.divide_papers_into_years(sample=self.sample)
-        yearly_abstracts = {}
+
+        # Create lists for Plotly heatmap
+        years_list = []
+        words_list = []
+        scores_list = []
+
         for year in papers_per_years.keys():
             paper_ids = papers_per_years[year]
-            yearly_abstracts[year] = self.get_abstract_from_id(
+            abstracts = self.get_abstract_from_id(
                 sample=self.get_sample_ids(), ids=paper_ids
             )
-        yearly_tfidfs = {}
-        for year, abstracts in yearly_abstracts.items():
-            df = self.get_top_tfidf_words_as_df(abstracts=abstracts, top_n=10)
 
-            yearly_tfidfs[year] = df.to_dict(orient="records")
-        data = yearly_tfidfs
-        return json.dumps(data, indent=2)
+            # Get TF-IDF DataFrame
+            df = self.get_top_tfidf_words_as_df(abstracts=abstracts, top_n=20)
+
+            # Append to lists
+            years_list.extend([year] * len(df))  # Repeat 'year' for each word
+            words_list.extend(df["Word"].tolist())  # Extract words
+            scores_list.extend(df["TF-IDF Score"].tolist())  # Extract scores
+
+        # Create JSON structure
+        heatmap_data = {
+            "Years": years_list,
+            "Words": words_list,
+            "TF-IDF Scores": scores_list,
+        }
+
+        return json.dumps(heatmap_data, indent=2)  # ✅ Ready for Plotly
 
     def run_category_distribution(self):
         if self.use_already_existing_sample:
@@ -464,7 +494,7 @@ class EDA:
     def save_abstract_length_counts_as_json(self):
         abstracts = self.get_abstracts(self.sample)
 
-        self.json_save_path = "./`data`/abstract_length_distribution.json"
+        self.json_save_path = "./data/abstract_length_distribution.json"
         self.save_json_to_file(
             json_data=self.get_abstract_lengths_as_json(abstracts=abstracts)
         )
@@ -504,6 +534,8 @@ class EDA:
 
     def save_tfidf_distribution_as_json(self):
         yearly_tfidfs = self.get_top_tfidf_words_per_year_as_json()
+        self.json_save_path = "./data/tfidf_distribution.json"
+        self.save_json_to_file(json_data=yearly_tfidfs)
 
     def run_test(self):
         if self.use_already_existing_sample:
