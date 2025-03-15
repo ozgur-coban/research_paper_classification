@@ -318,7 +318,7 @@ json format before react:
 
 BASVURUSU SONRASI YAPILACAKLAR:(gercekten hangilerine bakarlar ona gore karar ver)
 -(en son hizlica)readme ekle 
--(Onemli 2)lda-ldatfidf-tfidf karsilastirmasi koy
+-()lda-ldatfidf-tfidf karsilastirmasi koy
 -(Onemli 1)eda grafiklerini guzellestir
 -kodu refactor
 -commit'leri duzelt 

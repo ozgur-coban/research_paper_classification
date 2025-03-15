@@ -33,7 +33,7 @@ def main():
     # eda.save_category_distribution_as_json()
     # eda.save_year_distribution_as_json()
     # eda.save_abstract_length_counts_as_json()
-    eda.save_tfidf_distribution_as_json()
+    # eda.save_tfidf_distribution_as_json()
     return
     tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
     # preprocessing_save = Preprocessing(
