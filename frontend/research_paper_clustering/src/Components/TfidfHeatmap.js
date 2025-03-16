@@ -38,25 +38,28 @@ const TfidfHeatmap = () => {
 
   return (
     <div>
+      <div>
+        <label>Select Year Range: </label>
+        <select
+          value={selectedRange}
+          onChange={(e) => setSelectedRange(e.target.value)}
+        >
+          {timeRanges.map((range) => (
+            <option key={range.value} value={range.value}>
+              {range.value}
+            </option>
+          ))}
+        </select>
+      </div>
       <Plot
         data={heatmapData}
         layout={{
-          title: `TF-IDF Heatmap (${selectedTimeRange.start} - ${selectedTimeRange.end})`,
-          xaxis: { title: "Year" },
-          yaxis: { title: "Words" },
+          title: {
+            text: `TF-IDF Heatmap (${selectedTimeRange.start} - ${selectedTimeRange.end})`,
+          },
+          xaxis: { title: { text: "Years" } },
         }}
       />
-      <label>Select Year Range: </label>
-      <select
-        value={selectedRange}
-        onChange={(e) => setSelectedRange(e.target.value)}
-      >
-        {timeRanges.map((range) => (
-          <option key={range.value} value={range.value}>
-            {range.value}
-          </option>
-        ))}
-      </select>
     </div>
   );
 };

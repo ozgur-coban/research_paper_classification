@@ -2,25 +2,36 @@ import React, { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
 
 const YearDistribution = () => {
-  const [yearData, setYearData] = useState(null);
+  const [data, setData] = useState(null);
+
   useEffect(() => {
-    fetch("year_distribution.json")
+    fetch("/year_distribution.json")
       .then((response) => response.json())
-      .then((data) => setYearData(data))
-      .catch((error) => {
-        console.error("Error fetching the data", error);
-      });
+      .then((data) => setData(data))
+      .catch((error) => console.error("Error fetching data: ", error));
   }, []);
-  if (!yearData) {
-    return <div>Loading</div>;
+
+  if (!data) {
+    return <div>Loading...</div>;
   }
-  const data = [
-    { x: yearData["Years"], y: yearData["Year Counts"], type: "bar" },
-  ];
+
   return (
-    <div>
-      <Plot data={data}></Plot>
-    </div>
+    <Plot
+      data={[
+        {
+          x: data["Years"], // Years
+          y: data["Year Counts"], // Number of papers per year
+          type: "scatter",
+          mode: "markers",
+          marker: { opacity: 0.7, size: 5, color: "blue" },
+        },
+      ]}
+      layout={{
+        title: { text: "Number of Papers Published Over the Years" },
+        xaxis: { title: "Year" },
+        yaxis: { title: "Number of Papers" },
+      }}
+    />
   );
 };
 

@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from collections import Counter, defaultdict
 from datetime import datetime
 from wordcloud import WordCloud
 from sklearn.feature_extraction.text import TfidfVectorizer
+from config import CATEGORY_LIST
 
 
 class EDA:
@@ -455,7 +455,7 @@ class EDA:
             "TF-IDF Scores": scores_list,
         }
 
-        return json.dumps(heatmap_data, indent=2)  # ✅ Ready for Plotly
+        return json.dumps(heatmap_data, indent=2)
 
     def run_category_distribution(self):
         if self.use_already_existing_sample:

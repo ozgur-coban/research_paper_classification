@@ -3,34 +3,57 @@ import Plot from "react-plotly.js";
 
 function CategoryDistribution() {
   const [categoryData, setCategoryData] = useState(null);
+  const [categoryMappings, setCategoryMappings] = useState(null);
+
   useEffect(() => {
-    // Fetch the JSON data from the public folder
-    fetch("/category_distribution.json")
-      .then((response) => response.json())
-      .then((data) => setCategoryData(data))
-      .catch((error) => console.error("Error fetching the data: ", error));
+    async function fetchData() {
+      try {
+        // Fetch both datasets in parallel
+        const [categoryResponse, mappingsResponse] = await Promise.all([
+          fetch("/category_distribution.json"),
+          fetch("/category_mappings.json"),
+        ]);
+
+        if (!categoryResponse.ok || !mappingsResponse.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const categoryData = await categoryResponse.json();
+        const mappingsData = await mappingsResponse.json();
+
+        setCategoryData(categoryData);
+        setCategoryMappings(mappingsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchData();
   }, []);
 
-  // Render the plot only when data is available
-  if (!categoryData) {
+  if (!categoryData || !categoryMappings) {
     return <div>Loading...</div>;
   }
 
-  // Prepare data for Plotly
+  // Prepare data for Plotly with hover text
+  const shortNames = categoryData["CS Subcategories"];
+  const fullNames = shortNames.map(
+    (shortName) => categoryMappings[shortName] || shortName
+  );
+
   const data = [
     {
-      x: categoryData["CS Subcategories"],
+      x: shortNames, // Keep short names on X-axis
       y: categoryData["Number of Papers"],
       type: "bar",
-      marker: {
-        color: "#1f77b4", // Optional color customization
-      },
+      marker: { color: "#1f77b4", line: { color: "#000", width: 1 } },
+      text: fullNames, // Full names for hover text
+      hoverinfo: "text+y", // Show full name + number of papers on hover
     },
   ];
 
-  // Layout customization for the chart
   const layout = {
-    title: "Top CS Subcategories in ArXiv Dataset",
+    title: { text: "Top CS Subcategories in ArXiv Dataset" },
     xaxis: {
       title: "CS Subcategories",
       tickangle: 45,

@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./TopicDisplay.css";
 
 function TopicDisplay() {
-  const [topics, setTopics] = useState([]);
+  const [topics, setTopics] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeYear, setActiveYear] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
-  const [scrolling, setScrolling] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const contentRef = useRef(null);
+
   useEffect(() => {
     const fetchTopics = async () => {
       try {
@@ -18,11 +20,12 @@ function TopicDisplay() {
         }
         const data = await response.json();
         const categoryMappings = await categoryResponse.json();
-        // Update the categories with human-readable names dynamically
+
+        // Convert category keys to human-readable names
         const updatedTopics = Object.keys(data).reduce((acc, year) => {
           acc[year] = Object.keys(data[year]).reduce((yearAcc, category) => {
             const humanReadableCategory =
-              categoryMappings[category] || category; // fallback to original if not found
+              categoryMappings[category] || category;
             yearAcc[humanReadableCategory] = data[year][category];
             return yearAcc;
           }, {});
@@ -40,66 +43,58 @@ function TopicDisplay() {
     fetchTopics();
   }, []);
 
-  // Handle scroll detection
-  const handleScroll = () => {
-    if (window.scrollY > 100) {
-      setScrolling(true);
-    } else {
-      setScrolling(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
   const handleYearClick = (year) => {
     setActiveYear(activeYear === year ? null : year);
-    setActiveCategory(null); // Reset category when changing year
+    setActiveCategory(null);
+    setExpandedCategories({});
   };
 
   const handleCategoryClick = (category) => {
     setActiveCategory(activeCategory === category ? null : category);
-    // Scroll to the top of the page when a category is selected
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (contentRef.current) {
+      contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
-  if (loading) {
-    return <div className="loading-spinner">Loading...</div>;
-  }
+  const toggleCategoryExpansion = (year) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [year]: !prev[year],
+    }));
+  };
 
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
+  if (loading) return <div className="loading-spinner">Loading...</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div className="topic-display-container">
-      <header className={`sticky-header ${scrolling ? "scrolled" : ""}`}>
-        <h1>Topic Modeling Results</h1>
-      </header>
+    <div className="main-content">
+      <div className="sidebar">
+        <h3>Years</h3>
+        <ul>
+          {Object.keys(topics)
+            .reverse()
+            .map((year) => {
+              const categories = Object.keys(topics[year]);
+              const isExpanded = expandedCategories[year];
+              const displayedCategories = isExpanded
+                ? categories
+                : categories.slice(0, 10);
 
-      <div className="main-content">
-        <div className="sidebar">
-          <h3>Years</h3>
-          <ul>
-            {Object.keys(topics).map((year) => (
-              <li key={year}>
-                <button
-                  className={`sidebar-button ${
-                    activeYear === year ? "active" : ""
-                  }`}
-                  onClick={() => handleYearClick(year)}
-                >
-                  {year}
-                </button>
-                {activeYear === year && (
-                  <ul className="category-list">
-                    {Object.keys(topics[year]).map((category) => (
-                      <li key={category}>
+              return (
+                <li key={year}>
+                  <button
+                    className={`sidebar-button ${
+                      activeYear === year ? "active" : ""
+                    }`}
+                    onClick={() => handleYearClick(year)}
+                  >
+                    {year}
+                  </button>
+                  {activeYear === year && (
+                    <div className="category-list-container">
+                      {displayedCategories.map((category) => (
                         <button
+                          key={category}
                           className={`category-button ${
                             activeCategory === category ? "active" : ""
                           }`}
@@ -107,40 +102,41 @@ function TopicDisplay() {
                         >
                           {category}
                         </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+                      ))}
+                      {categories.length > 10 && (
+                        <button
+                          className="show-more-button"
+                          onClick={() => toggleCategoryExpansion(year)}
+                        >
+                          {isExpanded ? "Show Less" : "Show More"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+        </ul>
+      </div>
 
-        <div className="content">
-          {activeYear && (
-            <div className={`year-card ${scrolling ? "sticky" : ""}`}>
-              <h2>{activeYear}</h2>
-              {activeCategory && (
-                <div className="category-card">
-                  <h3>{activeCategory}</h3>
-                  <div className="topics">
-                    {topics[activeYear][activeCategory].map((topic) => (
-                      <div key={topic.topic_idx} className="topic-card">
-                        <p>
-                          <strong>Topic Index:</strong> {topic.topic_idx}
-                        </p>
-                        <p>
-                          <strong>Top Words:</strong>{" "}
-                          {topic.top_words.join(", ")}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+      <div className="content" ref={contentRef}>
+        {activeYear && activeCategory && (
+          <div className="category-card">
+            <h2>
+              {activeYear} - {activeCategory}
+            </h2>
+            <div className="topics">
+              {topics[activeYear][activeCategory].map((topic) => (
+                <div key={topic.topic_idx} className="topic-card">
+                  <p>
+                    <strong>Top TF-IDF, LDA Words:</strong>{" "}
+                    {topic.top_words.join(", ")}
+                  </p>
                 </div>
-              )}
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

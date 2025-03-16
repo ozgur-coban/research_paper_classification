@@ -319,13 +319,20 @@ json format before react:
 BASVURUSU SONRASI YAPILACAKLAR:(gercekten hangilerine bakarlar ona gore karar ver)
 -(en son hizlica)readme ekle 
 -()lda-ldatfidf-tfidf karsilastirmasi koy
--(Onemli 1)eda grafiklerini guzellestir
++(Onemli 1)eda grafiklerini guzellestir
 -kodu refactor
 -commit'leri duzelt 
--(Onemli)frontend'i duzelt
++(Onemli)frontend'i duzelt ()
 +(Onemli)kategori isimleri anlasilabilir yapilacak
 -gereksiz dosyalari cikar, notes falan gibi + dosya duzenini duzelt
--fix the folder structure
+
+TODO
+-koddaki igrenc kisimlari temizlemek
+-gitignore dosyalarini guncellemek(notes,data?,test_soup?,arxiv_papers.xml,gitignore?,eslint.config?,package-lock.json?,package.json?)
+-folder structure'i duzeltmek
+-readme eklemek
+-commit message'lari duzeltmeyi ogrenmek
+
 
 So now main aspects of the project : Python data processing, React deployment on Vercel. For the python part, I've used an arxiv.org dataset and got a sample of  9000  For a 95% confidence level with a 1% margin of error  to first classify research for each year for each category, then I did eda to see : category distribution, year published distribution. Applied prerocessing(lowering,stopwordremoval,lemmatization) to all abstracts and continued eda with  abstract length  distribution to find average, then I applied tfidf to individual abstracts to find top idf words for each year for each category to analyze category trends over years. Then as a final point I wanted to test, I applied LDA to all abstracts per year per category, TFIDF to all abstracts per year per category, and LDA fed with TFIDF to all abstracts per year per category to discover subcategorizes of abstracts. After all of this deployed using React with visualization.
 
