@@ -25,154 +25,7 @@ class EDA:
         self.sample_size = sample_size
         self.use_already_existing_sample = use_already_existing_sample
         self.json_save_path = json_save_path
-        self.category_list = [
-            "cs.AI",
-            "cs.AR",
-            "cs.CC",
-            "cs.CE",
-            "cs.CG",
-            "cs.CL",
-            "cs.CR",
-            "cs.CV",
-            "cs.CY",
-            "cs.DB",
-            "cs.DC",
-            "cs.DL",
-            "cs.DM",
-            "cs.DS",
-            "cs.ET",
-            "cs.FL",
-            "cs.GL",
-            "cs.GR",
-            "cs.GT",
-            "cs.HC",
-            "cs.IR",
-            "cs.IT",
-            "cs.LG",
-            "cs.LO",
-            "cs.MA",
-            "cs.MM",
-            "cs.MS",
-            "cs.NA",
-            "cs.NE",
-            "cs.NI",
-            "cs.OH",
-            "cs.OS",
-            "cs.PF",
-            "cs.PL",
-            "cs.RO",
-            "cs.SC",
-            "cs.SD",
-            "cs.SE",
-            "cs.SI",
-            "cs.SY",
-            "econ.EM",
-            "econ.GN",
-            "econ.TH",
-            "eess.AS",
-            "eess.IV",
-            "eess.SP",
-            "eess.SY",
-            "math.AC",
-            "math.AG",
-            "math.AP",
-            "math.AT",
-            "math.CA",
-            "math.CO",
-            "math.CT",
-            "math.CV",
-            "math.DG",
-            "math.DS",
-            "math.FA",
-            "math.GM",
-            "math.GN",
-            "math.GR",
-            "math.GT",
-            "math.HO",
-            "math.IT",
-            "math.KT",
-            "math.LO",
-            "math.MG",
-            "math.MP",
-            "math.NA",
-            "math.NT",
-            "math.OA",
-            "math.OC",
-            "math.PR",
-            "math.QA",
-            "math.RA",
-            "math.RT",
-            "math.SG",
-            "math.SP",
-            "math.ST",
-            "astro-ph.CO",
-            "astro-ph.EP",
-            "astro-ph.GA",
-            "astro-ph.HE",
-            "astro-ph.IM",
-            "astro-ph.SR",
-            "cond-mat.dis",
-            "cond-mat.mes",
-            "cond-mat.mtrl",
-            "cond-mat.other",
-            "cond-mat.quant",
-            "cond-mat.soft",
-            "cond-mat.stat",
-            "cond-mat.str",
-            "cond-mat.supr",
-            "nlin.AO",
-            "nlin.CD",
-            "nlin.CG",
-            "nlin.PS",
-            "nlin.SI",
-            "physics.acc",
-            "physics.ao",
-            "physics.app",
-            "physics.atm",
-            "physics.atom",
-            "physics.bio",
-            "physics.chem",
-            "physics.class",
-            "physics.comp",
-            "physics.data",
-            "physics.ed",
-            "physics.flu",
-            "physics.gen",
-            "physics.geo",
-            "physics.hist",
-            "physics.ins",
-            "physics.med",
-            "physics.optics",
-            "physics.plasm",
-            "physics.pop",
-            "physics.soc",
-            "physics.space",
-            "q-bio.BM",
-            "q-bio.CB",
-            "q-bio.GN",
-            "q-bio.MN",
-            "q-bio.NC",
-            "q-bio.OT",
-            "q-bio.PE",
-            "q-bio.QM",
-            "q-bio.SC",
-            "q-bio.TO",
-            "q-fin.CP",
-            "q-fin.EC",
-            "q-fin.GN",
-            "q-fin.MF",
-            "q-fin.PM",
-            "q-fin.PR",
-            "q-fin.RM",
-            "q-fin.ST",
-            "q-fin.TR",
-            "stat.AP",
-            "stat.CO",
-            "stat.ME",
-            "stat.ML",
-            "stat.OT",
-            "stat.TH",
-        ]
+        self.category_list = CATEGORY_LIST
         if use_already_existing_sample:
             self.sample_path = sample_path
             self.sample = sample
@@ -320,7 +173,6 @@ class EDA:
 
         df = pd.DataFrame({"Word Count": lengths, "Character Count": char_lengths})
 
-        print(df.describe())  # Summary statistics
         # Plot histogram of word counts
         plt.figure(figsize=(10, 5))
         sns.histplot(df["Word Count"], bins=30, kde=True)
@@ -391,7 +243,6 @@ class EDA:
 
     def get_abstract_from_id(self, sample, ids):
         abstracts = []
-        # print(sample.keys())
         for id in ids:
             abstract = sample.get(id).get("abstract")
             abstracts.append(abstract)
@@ -411,21 +262,6 @@ class EDA:
             yearly_tfidf_dfs[year] = df
         return yearly_tfidf_dfs
 
-    # def get_top_tfidf_words_per_year_as_json(self):
-    #     papers_per_years = self.divide_papers_into_years(sample=self.sample)
-    #     yearly_abstracts = {}
-    #     for year in papers_per_years.keys():
-    #         paper_ids = papers_per_years[year]
-    #         yearly_abstracts[year] = self.get_abstract_from_id(
-    #             sample=self.get_sample_ids(), ids=paper_ids
-    #         )
-    #     yearly_tfidfs = {}
-    #     for year, abstracts in yearly_abstracts.items():
-    #         df = self.get_top_tfidf_words_as_df(abstracts=abstracts, top_n=10)
-
-    #         yearly_tfidfs[year] = df.to_dict(orient="records")
-    #     data = yearly_tfidfs
-    #     return json.dumps(data, indent=2)
     def get_top_tfidf_words_per_year_as_json(self):
         papers_per_years = self.divide_papers_into_years(sample=self.sample)
 
@@ -536,14 +372,3 @@ class EDA:
         yearly_tfidfs = self.get_top_tfidf_words_per_year_as_json()
         self.json_save_path = "./data/tfidf_distribution.json"
         self.save_json_to_file(json_data=yearly_tfidfs)
-
-    def run_test(self):
-        if self.use_already_existing_sample:
-            sample_data = self.get_sample()
-        else:
-            sample_data = self.load_sample()
-        # abstracts = self.get_abstracts(sample_data)
-        # self.analyze_abstract_lengths(abstracts)
-        # self.generate_word_cloud(abstracts)
-        # print(self.get_top_tfidf_words_as_df(abstracts))
-        print(sample_data)

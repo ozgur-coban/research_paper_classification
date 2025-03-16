@@ -1,12 +1,9 @@
 import numpy as np
 import pandas as pd
 import spacy
-import nltk
-from nltk.corpus import stopwords
-import string
-import re
 import json
 from datetime import datetime
+from config import CATEGORY_LIST
 
 
 class Preprocessing:
@@ -19,7 +16,6 @@ class Preprocessing:
         normalized_abstract_path=None,
     ):
         self.sample = sample
-        # nltk.download("stopwords")
         self.nlp = spacy.load(
             "en_core_web_sm", disable=["ner", "parser"]
         )  # Only keep tokenization
@@ -29,154 +25,7 @@ class Preprocessing:
             self.abstract_save_path = abstract_save_path
         else:
             self.normalized_abstract_path = normalized_abstract_path
-        self.category_list = self.category_list = [
-            "cs.AI",
-            "cs.AR",
-            "cs.CC",
-            "cs.CE",
-            "cs.CG",
-            "cs.CL",
-            "cs.CR",
-            "cs.CV",
-            "cs.CY",
-            "cs.DB",
-            "cs.DC",
-            "cs.DL",
-            "cs.DM",
-            "cs.DS",
-            "cs.ET",
-            "cs.FL",
-            "cs.GL",
-            "cs.GR",
-            "cs.GT",
-            "cs.HC",
-            "cs.IR",
-            "cs.IT",
-            "cs.LG",
-            "cs.LO",
-            "cs.MA",
-            "cs.MM",
-            "cs.MS",
-            "cs.NA",
-            "cs.NE",
-            "cs.NI",
-            "cs.OH",
-            "cs.OS",
-            "cs.PF",
-            "cs.PL",
-            "cs.RO",
-            "cs.SC",
-            "cs.SD",
-            "cs.SE",
-            "cs.SI",
-            "cs.SY",
-            "econ.EM",
-            "econ.GN",
-            "econ.TH",
-            "eess.AS",
-            "eess.IV",
-            "eess.SP",
-            "eess.SY",
-            "math.AC",
-            "math.AG",
-            "math.AP",
-            "math.AT",
-            "math.CA",
-            "math.CO",
-            "math.CT",
-            "math.CV",
-            "math.DG",
-            "math.DS",
-            "math.FA",
-            "math.GM",
-            "math.GN",
-            "math.GR",
-            "math.GT",
-            "math.HO",
-            "math.IT",
-            "math.KT",
-            "math.LO",
-            "math.MG",
-            "math.MP",
-            "math.NA",
-            "math.NT",
-            "math.OA",
-            "math.OC",
-            "math.PR",
-            "math.QA",
-            "math.RA",
-            "math.RT",
-            "math.SG",
-            "math.SP",
-            "math.ST",
-            "astro-ph.CO",
-            "astro-ph.EP",
-            "astro-ph.GA",
-            "astro-ph.HE",
-            "astro-ph.IM",
-            "astro-ph.SR",
-            "cond-mat.dis",
-            "cond-mat.mes",
-            "cond-mat.mtrl",
-            "cond-mat.other",
-            "cond-mat.quant",
-            "cond-mat.soft",
-            "cond-mat.stat",
-            "cond-mat.str",
-            "cond-mat.supr",
-            "nlin.AO",
-            "nlin.CD",
-            "nlin.CG",
-            "nlin.PS",
-            "nlin.SI",
-            "physics.acc",
-            "physics.ao",
-            "physics.app",
-            "physics.atm",
-            "physics.atom",
-            "physics.bio",
-            "physics.chem",
-            "physics.class",
-            "physics.comp",
-            "physics.data",
-            "physics.ed",
-            "physics.flu",
-            "physics.gen",
-            "physics.geo",
-            "physics.hist",
-            "physics.ins",
-            "physics.med",
-            "physics.optics",
-            "physics.plasm",
-            "physics.pop",
-            "physics.soc",
-            "physics.space",
-            "q-bio.BM",
-            "q-bio.CB",
-            "q-bio.GN",
-            "q-bio.MN",
-            "q-bio.NC",
-            "q-bio.OT",
-            "q-bio.PE",
-            "q-bio.QM",
-            "q-bio.SC",
-            "q-bio.TO",
-            "q-fin.CP",
-            "q-fin.EC",
-            "q-fin.GN",
-            "q-fin.MF",
-            "q-fin.PM",
-            "q-fin.PR",
-            "q-fin.RM",
-            "q-fin.ST",
-            "q-fin.TR",
-            "stat.AP",
-            "stat.CO",
-            "stat.ME",
-            "stat.ML",
-            "stat.OT",
-            "stat.TH",
-        ]
+        self.category_list = self.category_list = CATEGORY_LIST
 
     def divide_papers_into_years(self):
         papers_per_year = {}
@@ -247,26 +96,6 @@ class Preprocessing:
             cleaned_abstracts.append(" ".join(tokens))
 
         return cleaned_abstracts
-
-    # def get_abstracts_by_year_category(self, papers_by_year_category):
-    #     abstracts_by_year_category = {}
-
-    #     for year, categories in papers_by_year_category.items():
-    #         abstracts_by_year_category[year] = {}
-
-    #         for category, paper_ids in categories.items():
-    #             abstracts_by_year_category[year][category] = self.get_abstract_from_id(
-    #                 paper_ids
-    #             )
-    #     for year, categories in abstracts_by_year_category.items():
-    #         for category, abstracts in categories.items():
-    #             # Apply normalization to each abstract
-    #             normalized_abstracts = [
-    #                 self.normalize_abstract(abstract) for abstract in abstracts
-    #             ]
-    #             abstracts_by_year_category[year][category] = normalized_abstracts
-
-    #     return abstracts_by_year_category
 
     def get_abstracts_by_year_category(self, papers_by_year_category):
         abstracts_by_year_category = {}

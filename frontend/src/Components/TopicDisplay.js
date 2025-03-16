@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import "./TopicDisplay.css";
+import "../css/TopicDisplay.css";
 
 function TopicDisplay() {
   const [topics, setTopics] = useState({});

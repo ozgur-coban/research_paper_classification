@@ -26,5 +26,3 @@ category_names = [
     for category in categories
     if re.match(r"([a-zA-Z\-]+\.[A-Za-z]+)\s?\(([^)]+)\)", category)
 ]
-
-print(category_names)

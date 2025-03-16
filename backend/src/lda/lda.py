@@ -56,21 +56,6 @@ class LDA:
                 # Store topic-word distributions
                 self.lda_results[year][category] = self.lda.components_
 
-    # def display_topics(self, num_top_words=10):
-    #     """Displays the top words for each topic."""
-    #     feature_names = (
-    #         self.vectorizer.get_feature_names_out()
-    #     )  # Get words from vectorizer
-
-    #     for year, categories in self.lda_results.items():
-    #         for category, topics in categories.items():
-    #             print(f"Year: {year}, Category: {category}")
-    #             for topic_idx, topic in enumerate(topics):
-    #                 top_words = [
-    #                     feature_names[i]
-    #                     for i in topic.argsort()[: -num_top_words - 1 : -1]
-    #                 ]
-    #                 print(f"  Topic {topic_idx}: {' '.join(top_words)}")
     def display_topics(self, num_top_words=10):
         """Displays the top words for each topic."""
         feature_names = (
@@ -115,12 +100,8 @@ class LDA:
         with open(self.save_lda_path, "w") as f:
             json.dump(topics_json, f)
 
-    def test_tfidf(self):
+    def run_tfidf(self):
         self.apply_lda_using_tfidf()
         topics_json = self.display_topics()
         if self.save_lda_path:
             self.save_lda_results(topics_json)
-
-    def test_countvectorizer(self):
-        self.apply_lda_using_countvectorizer()
-        self.display_topics()
